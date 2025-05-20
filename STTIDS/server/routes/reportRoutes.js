@@ -53,4 +53,54 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/report/analytics
+router.get("/analytics", async (req, res) => {
+  try {
+    const allReports = await Report.find();
+
+    // Total number of reports
+    const totalReports = allReports.length;
+
+    // Count by threat level
+    const byThreatLevel = { High: 0, Medium: 0, Low: 0 };
+    const byStatus = { Pending: 0, "In Progress": 0, Resolved: 0 };
+
+    const recentReports = allReports
+      .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+      .slice(0, 5);
+
+    const reportsOverTime = {};
+
+    allReports.forEach((report) => {
+      // Threat level
+      if (byThreatLevel[report.threatLevel] !== undefined) {
+        byThreatLevel[report.threatLevel]++;
+      }
+
+      // Status
+      if (byStatus[report.status] !== undefined) {
+        byStatus[report.status]++;
+      }
+
+      // Date trend
+      const date = new Date(report.submittedAt).toISOString().split("T")[0];
+      reportsOverTime[date] = (reportsOverTime[date] || 0) + 1;
+    });
+
+    const reportsOverTimeArr = Object.entries(reportsOverTime).map(
+      ([date, count]) => ({ date, count })
+    );
+
+    res.json({
+      totalReports,
+      byThreatLevel,
+      byStatus,
+      recentReports,
+      reportsOverTime: reportsOverTimeArr,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch analytics" });
+  }
+});
+
 module.exports = router;

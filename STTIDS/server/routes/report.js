@@ -25,4 +25,43 @@ router.post("/api/report", async (req, res) => {
   }
 });
 
+// PATCH: Update threat status
+router.patch("/api/report/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+    const updated = await Report.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating status" });
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  try {
+    await Report.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Report deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete report" });
+  }
+});
+
+router.put("/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+    const updatedReport = await Report.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    res.status(200).json(updatedReport);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update status" });
+  }
+});
+
+
 module.exports = router;

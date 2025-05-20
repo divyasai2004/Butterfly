@@ -12,8 +12,9 @@ const reportSchema = new mongoose.Schema({
   severity: String,
   threatScore: Number,
   status: {
-    type: String,
-    default: 'Pending'
+  type: String,
+  enum: ["Pending", "Under Review", "Confirmed Threat", "False Alarm"],
+  default: "Pending"
   },
   threatLevel: { type: String, default: "Low" },
   threatScore: { type: Number, default: 0 },
