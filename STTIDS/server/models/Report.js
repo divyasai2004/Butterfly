@@ -14,7 +14,10 @@ const reportSchema = new mongoose.Schema({
   status: {
     type: String,
     default: 'Pending'
-  }
+  },
+  threatLevel: { type: String, default: "Low" },
+  threatScore: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Report', reportSchema);
