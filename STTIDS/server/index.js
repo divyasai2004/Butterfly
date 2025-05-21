@@ -6,20 +6,25 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
+})
+.then(() => console.log('✅ MongoDB connected'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
 
-// ✅ Use routes
+// Import and use report routes
 const reportRoutes = require('./routes/reportRoutes');
-app.use('/api/report', reportRoutes);
+const reportActions = require('./routes/report');
+app.use('/api/report', reportRoutes); // For analytics, creation, list, etc.
+app.use('/api/report-actions', reportActions); // For delete, patch, status change
 
-//start server
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Server is running at http://localhost:${PORT}`);
 });
