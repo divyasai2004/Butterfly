@@ -1,46 +1,32 @@
-// routes/reportRoutes.js
 const express = require('express');
 const router = express.Router();
-const Report = require('../models/Report'); // ✅ Correct import
+const Report = require('../models/Report');
+const threatDetector = require("../utils/threatDetector");
 
-// POST - Create a new threat report
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const {
-      description,
-      location,
-      sourceUrl,
-      keywordsDetected,
-      severity,
-      threatScore,
-      status
-    } = req.body;
+    const { description, location, sourceUrl } = req.body;
 
-    // Optional: Validate required fields
-    if (!description || !location) {
-      return res.status(400).json({ error: 'Description and location are required.' });
-    }
+    // Use the threatDetector to determine severity (returns "High", "Medium", "Low")
+    const threatLevel = threatDetector(description);
 
     const newReport = new Report({
       description,
       location,
       sourceUrl,
-      keywordsDetected,
-      severity,
-      threatScore,
-      status
+      threatLevel,
     });
 
-    const savedReport = await newReport.save();
-    res.status(201).json({
-      message: 'Threat Report Saved!',
-      data: savedReport
-    });
+    await newReport.save();
+
+    res.status(201).json({ success: true, data: newReport });
   } catch (error) {
-    console.error('Error saving report:', error);
-    res.status(500).json({ error: 'Failed to save report.' });
+    console.error("Error submitting report:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
+
+
 
 // GET - Fetch all threat reports
 router.get('/', async (req, res) => {
@@ -54,16 +40,12 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/report/analytics
-router.get("/analytics", async (req, res) => {
+router.get('/analytics', async (req, res) => {
   try {
     const allReports = await Report.find();
-
-    // Total number of reports
     const totalReports = allReports.length;
-
-    // Count by threat level
     const byThreatLevel = { High: 0, Medium: 0, Low: 0 };
-    const byStatus = { Pending: 0, "In Progress": 0, Resolved: 0 };
+    const byStatus = { Pending: 0, 'In Progress': 0, Resolved: 0 };
 
     const recentReports = allReports
       .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
@@ -73,8 +55,8 @@ router.get("/analytics", async (req, res) => {
 
     allReports.forEach((report) => {
       // Threat level
-      if (byThreatLevel[report.threatLevel] !== undefined) {
-        byThreatLevel[report.threatLevel]++;
+      if (byThreatLevel[report.severity] !== undefined) {
+        byThreatLevel[report.severity]++;
       }
 
       // Status
@@ -83,7 +65,7 @@ router.get("/analytics", async (req, res) => {
       }
 
       // Date trend
-      const date = new Date(report.submittedAt).toISOString().split("T")[0];
+      const date = new Date(report.submittedAt).toISOString().split('T')[0];
       reportsOverTime[date] = (reportsOverTime[date] || 0) + 1;
     });
 
@@ -96,10 +78,10 @@ router.get("/analytics", async (req, res) => {
       byThreatLevel,
       byStatus,
       recentReports,
-      reportsOverTime: reportsOverTimeArr,
+      reportsOverTime: reportsOverTimeArr
     });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch analytics" });
+    res.status(500).json({ error: 'Failed to fetch analytics' });
   }
 });
 
