@@ -8,7 +8,8 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-model = YOLO("yolov8n.pt")  # or yolov8s.pt / yolov8m.pt based on your setup
+model = YOLO("yolov8n.pt") 
+# model = YOLO("runs/detect/weights/best.pt")
 
 @app.route("/detect", methods=["POST"])
 def detect_objects():

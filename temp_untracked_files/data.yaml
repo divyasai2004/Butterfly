@@ -1,0 +1,13 @@
+train: ../gunDetection.v1i.yolov8/train/images
+val: ../gunDetection.v1i.yolov8/valid/images
+test: ../gunDetection.v1i.yolov8/test/images
+
+nc: 3
+names: ['Dual Berettas', 'Sawed-off', 'XM1014']
+
+roboflow:
+  workspace: divya-ogk5n
+  project: gundetection-enchs-ydp3h
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/divya-ogk5n/gundetection-enchs-ydp3h/dataset/1
